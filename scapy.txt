@@ -1,0 +1,102 @@
+from scapy.all import *
+import socket
+
+# ==============================
+# 1. ICMP (Ping)
+# ==============================
+print("\n===== ICMP (Ping) =====")
+
+target_ip = "8.8.8.8"
+
+icmp_packet = IP(dst=target_ip)/ICMP()
+icmp_reply = sr1(icmp_packet, timeout=2, verbose=0)
+
+if icmp_reply:
+print("ICMP Echo Reply received")
+icmp_reply.show()
+else:
+print("No ICMP response")
+
+
+# ==============================
+# 2. UDP Datagram
+# ==============================
+print("\n===== UDP Datagram =====")
+
+udp_packet = IP(dst="8.8.8.8")/UDP(dport=53)/DNS(
+rd=1,
+qd=DNSQR(qname="google.com")
+)
+
+udp_reply = sr1(udp_packet, timeout=2, verbose=0)
+
+if udp_reply:
+print("UDP Response received")
+udp_reply.show()
+else:
+print("No UDP response")
+
+
+# ==============================
+# 3. DNS Query
+# ==============================
+print("\n===== DNS Query =====")
+
+dns_packet = IP(dst="8.8.8.8")/UDP(dport=53)/DNS(
+rd=1,
+qd=DNSQR(qname="google.com")
+)
+
+dns_reply = sr1(dns_packet, timeout=2, verbose=0)
+
+if dns_reply:
+dns_reply.show()
+
+if dns_reply.haslayer(DNSRR):
+print("Resolved IP:", dns_reply[DNSRR].rdata)
+else:
+print("No DNS response")
+
+
+# ==============================
+# 4. HTTP GET Request
+# ==============================
+print("\n===== HTTP GET =====")
+
+try:
+s = socket.socket()
+s.connect(("www.google.com", 80))
+
+request = b"GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n"
+s.send(request)
+
+response = s.recv(4096)
+print(response.decode(errors="ignore"))
+
+s.close()
+
+except Exception as e:
+print("HTTP request failed:", e)
+
+
+# ==============================
+# 5. Traceroute
+# ==============================
+print("\n===== Traceroute =====")
+
+target_ip = "8.8.8.8"
+max_hops = 20
+
+for ttl in range(1, max_hops + 1):
+pkt = IP(dst=target_ip, ttl=ttl)/UDP(dport=33434)
+
+reply = sr1(pkt, timeout=2, verbose=0)
+
+if reply is None:
+print(f"{ttl} *")
+elif reply.haslayer(ICMP):
+if reply.getlayer(ICMP).type == 11:
+print(f"{ttl} {reply.src}")
+elif reply.getlayer(ICMP).type == 3:
+print(f"{ttl} {reply.src} (Destination reached)")
+break

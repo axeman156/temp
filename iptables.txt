@@ -1,0 +1,67 @@
+1. View all rules in filter table
+`iptables -L`
+
+2. View all rules with detailed/verbose output
+`iptables -L -v`
+
+3. View only INPUT chain rules
+`iptables -v -L INPUT`
+
+4. View all rules in mangle table
+`iptables -L -t mangle`
+
+5. View all rules in nat table
+`iptables -L -t nat`
+
+6. Flush/Delete all current rules
+`iptables --flush`
+OR
+`iptables -F`
+
+7. Create a custom chain named "mychain"
+`iptables -N mychain`
+
+8. List rules inside custom chain
+`iptables -L mychain`
+
+9. Delete custom chain "mychain"
+`iptables -X mychain`
+
+10. Try listing deleted chain
+`iptables -L mychain`
+
+11. Block all outgoing ICMP (ping) packets
+`iptables -A OUTPUT -o eth0 -p icmp -j DROP`
+
+12. Check OUTPUT chain rules
+`iptables -vL OUTPUT`
+
+13. Allow ping test (send 2 packets)
+`ping -c 2 google.com`
+
+14. Block ICMP packets from specific IP
+`iptables -A INPUT -i eth0 -p icmp --source 172.16.0.44 -j DROP`
+
+15. View INPUT chain with line numbers
+`iptables -vL INPUT --line-numbers`
+
+16. Delete rule number 1 from INPUT chain
+`iptables -D INPUT 1`
+
+17. Restart FTP server
+`service vsftpd restart`
+
+18. Block FTP traffic from specific IP
+`iptables -A INPUT -i eth0 -s 172.16.0.44 -p tcp --dport 21 -j DROP`
+
+19. Block HTTP traffic from specific IP/network
+`iptables -A INPUT -s 172.16.0.100 -p tcp --dport 80 -j DROP`
+
+20. Add NAT masquerading rule for packet forwarding
+`iptables --table nat -A POSTROUTING -o eth0 -j MASQUERADE`
+
+21. Enable IP forwarding temporarily
+`echo 1 > /proc/sys/net/ipv4/ip_forward`
+
+22. Save iptables rules permanently
+`iptables-save > /etc/sysconfig/iptables`
